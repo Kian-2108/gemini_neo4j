@@ -200,7 +200,7 @@ def update_schema(schema, document):
         )
 
     schema_response = client.models.generate_content(
-        model=gemini_models[1],
+        model=gemini_models[0],
         contents=[f"Existing schema {json.dumps(schema)}", f"New data source {document}"],
         config=schema_config,
         )
@@ -236,7 +236,7 @@ def update_data(schema, data, document):
         )
 
     data_response = client.models.generate_content(
-        model=gemini_models[2],
+        model=gemini_models[0],
         contents=[f"Existing schema {json.dumps(schema)}", f"Existing nodes {json.dumps(data)}",f"New data source {document}"],
         config=data_config,
         )
@@ -329,7 +329,7 @@ def text_to_cypher(schema, data, text):
         )
 
     cypher_response = client.models.generate_content(
-        model=gemini_models[1],
+        model=gemini_models[0],
         contents=[
             f"User question: {text}",
             f"Existing schema {json.dumps(schema)}",
@@ -355,7 +355,7 @@ def correct_cypher_query(cypher_query, result, schema, data, text):
         )
 
     correct_cypher_response = client.models.generate_content(
-        model=gemini_models[1],
+        model=gemini_models[0],
         contents=[
             f"User question: {text}",
             f"Incorrect Cypher query: {cypher_query}",
@@ -397,7 +397,7 @@ def text_to_response(schema, data, text):
         )
 
     response_response = client.models.generate_content(
-        model=gemini_models[1],
+        model=gemini_models[0],
         contents=[
             f"User question: {text}",
             f"Cypher query: {cypher_query}",
