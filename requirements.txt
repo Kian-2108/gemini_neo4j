@@ -6,5 +6,4 @@ msoffcrypto-tool
 networkx
 pandas
 neo4j
-streamlit
 tabulate

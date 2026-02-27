@@ -1,3 +1,3 @@
 # NutriGraph
 
-[Streamlit App](https://food-analysis.streamlit.app/)
+[Streamlit App](https://geminineo4j.streamlit.app/)
