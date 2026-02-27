@@ -24,9 +24,10 @@ gemini_models = [
     # "gemini-2.0-flash-thinking-exp-01-21",
     # "gemini-2.0-flash-lite",
     # "gemini-2.0-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-2.5-flash",
-    "gemini-2.5-pro",
+    # "gemini-2.5-flash-lite",
+    # "gemini-2.5-flash",
+    # "gemini-2.5-pro",
+    "gemini-3-flash-preview"
 ]
 
 def clean_string(input_string):
