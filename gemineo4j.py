@@ -6,8 +6,8 @@ import openpyxl
 from neo4j import GraphDatabase
 from google import genai
 from google.genai import types
-from pydantic import BaseModel
-from pydantic.types import conlist
+from pydantic import BaseModel, Field
+from typing import Union, List
 from typing import Union
 import warnings
 import streamlit as st
@@ -110,51 +110,39 @@ def get_graph_data():
     return data
     
 class Schema(BaseModel):
-    snt: str
-    rt: str
-    tnt: str
-
-schema_response_schema = {
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "snt": {"type": "string"},
-            "rt": {"type": "string"},
-            "tnt": {"type": "string"},
-        }
-        }
-}
+    snt: str = Field(description="Source Node Type (Title_Case)")
+    rt: str = Field(description="Relation Type (UPPER_CASE)")
+    tnt: str = Field(description="Target Node Type (Title_Case)")
 
 class Property(BaseModel):
-    k: str
-    v: Union[str, float]
+    k: str = Field(description="Property key")
+    v: Union[str, float] = Field(description="Property value")
 
 class Relation(BaseModel):
-    t: str
-    p: conlist(Property, min_length=0, max_length=2)
+    t: str = Field(description="Relation Type (UPPER_CASE)")
+    p: List[Property] = Field(default=[], max_length=2)
 
 class Node(BaseModel):
-    t: str
-    n: str
-    p: conlist(Property, min_length=0, max_length=2)
+    t: str = Field(description="Node Type (Title_Case)")
+    n: str = Field(description="Node Name or Identifier")
+    p: List[Property] = Field(default=[], max_length=2)
 
 class Data(BaseModel):
     sn: Node
     r: Relation
     tn: Node
 
-data_response_schema = {
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "sn": {"type": "object", "properties": {"t": {"type": "string"}, "n": {"type": "string"}, "p": {"type": "array", "minItems": 0, "maxItems": 2, "items": {"type": "object", "properties": {"k": {"type": "string"}, "v": {"type": "string"}}}}}},
-            "r": {"type": "object", "properties": {"t": {"type": "string"}, "p": {"type": "array", "minItems": 0, "maxItems": 2, "items": {"type": "object", "properties": {"k": {"type": "string"}, "v": {"type": "string"}}}}}},
-            "tn": {"type": "object", "properties": {"t": {"type": "string"}, "n": {"type": "string"}, "p": {"type": "array", "minItems": 0, "maxItems": 2, "items": {"type": "object", "properties": {"k": {"type": "string"}, "v": {"type": "string"}}}}}},
-        }
-    }
-}
+# data_response_schema = {
+#     "type": "array",
+#     "items": {
+#         "type": "object",
+#         "properties": {
+#             "sn": {"type": "object", "properties": {"t": {"type": "string"}, "n": {"type": "string"}, "p": {"type": "array", "minItems": 0, "maxItems": 2, "items": {"type": "object", "properties": {"k": {"type": "string"}, "v": {"type": "string"}}}}}},
+#             "r": {"type": "object", "properties": {"t": {"type": "string"}, "p": {"type": "array", "minItems": 0, "maxItems": 2, "items": {"type": "object", "properties": {"k": {"type": "string"}, "v": {"type": "string"}}}}}},
+#             "tn": {"type": "object", "properties": {"t": {"type": "string"}, "n": {"type": "string"}, "p": {"type": "array", "minItems": 0, "maxItems": 2, "items": {"type": "object", "properties": {"k": {"type": "string"}, "v": {"type": "string"}}}}}},
+#         }
+#     }
+# }
 
 abbreviation = """
     snt = source node type
@@ -192,10 +180,9 @@ def update_schema(schema, document):
         
     schema_config = types.GenerateContentConfig(
         system_instruction=schema_system_instruction,
-        thinking_config = types.ThinkingConfig(thinking_budget=12288),
+        thinking_config = types.ThinkingConfig(thinking_level="medium"),
         response_mime_type = "application/json",
-        response_schema = schema_response_schema,
-        # response_schema = Schema,
+        response_schema = list[Schema],
         **seed_config,
         )
 
@@ -228,9 +215,9 @@ def update_data(schema, data, document):
         
     data_config = types.GenerateContentConfig(
         system_instruction=data_system_instruction,
-        thinking_config = types.ThinkingConfig(thinking_budget=6144),
+        thinking_config = types.ThinkingConfig(thinking_level="medium"),
         response_mime_type = "application/json",
-        response_schema = data_response_schema,
+        response_schema = list[Data],
         # response_schema = Data,
         **seed_config,
         )
@@ -322,7 +309,7 @@ def text_to_cypher(schema, data, text):
         
     cypher_config = types.GenerateContentConfig(
         system_instruction=cypher_system_instruction,
-        thinking_config = types.ThinkingConfig(thinking_budget=512),
+        thinking_config = types.ThinkingConfig(thinking_level="medium"),
         response_mime_type = "application/json",
         response_schema = {"type": "string", "nullable": False},
         **seed_config,
@@ -348,7 +335,7 @@ def correct_cypher_query(cypher_query, result, schema, data, text):
         
     correct_cypher_config = types.GenerateContentConfig(
         system_instruction=correct_cypher_system_instruction,
-        thinking_config = types.ThinkingConfig(thinking_budget=24576),
+        thinking_config = types.ThinkingConfig(thinking_level="medium"),
         response_mime_type = "application/json",
         response_schema = {"type": "string", "nullable": False},
         **seed_config,
@@ -392,7 +379,7 @@ def text_to_response(schema, data, text):
         
     response_config = types.GenerateContentConfig(
         system_instruction=response_system_instruction,
-        thinking_config = types.ThinkingConfig(thinking_budget=24576),
+        thinking_config = types.ThinkingConfig(thinking_level="medium"),
         **seed_config,
         )
 
